@@ -1,0 +1,24 @@
+# Docker
+**/Dockerfile
+**/docker-compose.yml
+**/.env
+
+# Node
+node_modules/
+npm-debug.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+
+# Database
+*.sqlite3
+*.db
+
+# IDE
+.idea/
+.vscode/
