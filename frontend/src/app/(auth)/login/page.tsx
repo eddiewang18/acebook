@@ -46,7 +46,7 @@ export default function LoginPage() {
 
       if (res.ok) {
         localStorage.setItem('access_token', data.access);
-        router.push('/home');
+        router.push('/profile');
       } else {
         console.error('後端驗證失敗', data);
         alert('Google 登入失敗');
@@ -60,7 +60,7 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('登入資訊:', { username, password });
-    router.push('/home');
+    router.push('/profile');
   };
 
   const handleSocialLogin = (provider: string) => {
@@ -163,14 +163,6 @@ export default function LoginPage() {
                 <span>使用 Google 登入</span>
               </button>
               
-              <button
-                type="button"
-                className="social-button facebook"
-                onClick={() => handleSocialLogin('Facebook')}
-              >
-                <FaFacebook />
-                <span>使用 Facebook 登入</span>
-              </button>
             </div>
             
             <div className="register-link">
