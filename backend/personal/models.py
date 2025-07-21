@@ -9,7 +9,6 @@ class InterestGroup(models.Model):
     class Meta:
         db_table = "interest_group"
 
-
 class InterestTag(models.Model):
     interest_group_id = models.ForeignKey(InterestGroup, on_delete=models.CASCADE,db_column='interest_group_id')
     name = models.CharField(max_length=30, unique=True, db_column="name")
@@ -20,7 +19,6 @@ class InterestTag(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Profile(models.Model):
     GENDER_CHOICES = [
