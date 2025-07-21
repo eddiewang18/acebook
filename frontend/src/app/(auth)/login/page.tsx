@@ -4,13 +4,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaGoogle, FaFacebook, FaHeart, FaUser, FaLock } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import './loginPage.css'; // 我們會稍後創建這個CSS文件
+import './loginPage.css';
 
 export default function LoginPage() {
   const [showIntro, setShowIntro] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  console.log("Google client ID:", clientId);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -19,17 +22,53 @@ export default function LoginPage() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.google && clientId) {
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleCredentialResponse,
+      });
+    }
+  }, [clientId]);
+
+  const handleCredentialResponse = async (response: any) => {
+    const idToken = response.credential;
+    try {
+      const res = await fetch('http://localhost:8000/authen/login/google/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id_token: idToken }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('access_token', data.access);
+        router.push('/home');
+      } else {
+        console.error('後端驗證失敗', data);
+        alert('Google 登入失敗');
+      }
+    } catch (err) {
+      console.error('登入錯誤:', err);
+      alert('登入錯誤，請稍後再試');
+    }
+  };
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // 這裡處理登入邏輯
     console.log('登入資訊:', { username, password });
     router.push('/home');
   };
 
   const handleSocialLogin = (provider: string) => {
-    console.log(`${provider} 登入`);
-    // 這裡處理社交登入邏輯
-    router.push('/home');
+    if (provider === 'Google') {
+      window.google?.accounts.id.prompt(); // 觸發 Google 登入彈窗
+    } else {
+      console.log(`${provider} 登入（尚未實作）`);
+    }
   };
 
   return (
