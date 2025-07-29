@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from dotenv import load_dotenv
 import traceback
+from personal.models import Profile
+import os
 
 load_dotenv()
 
@@ -22,7 +24,7 @@ class GoogleLoginAPIView(APIView):
             idinfo = id_token.verify_oauth2_token(
                 token,
                 requests.Request(),
-                "497218345427-n2on088pc0rl07krdv06k6ob3ff3c134.apps.googleusercontent.com"
+                 os.getenv('GOOGLE_CLIENT_ID')
             )
 
             # 取得用戶資訊
@@ -34,6 +36,9 @@ class GoogleLoginAPIView(APIView):
                 username=email,
                 defaults={"email": email, "first_name": name}
             )
+            
+            profile, created = Profile.objects.get_or_create(user=user)
+
 
             # 發送 JWT token
             refresh = RefreshToken.for_user(user)

@@ -6,3 +6,4 @@ django-cors-headers==4.2.0
 google-auth==2.40.3
 djangorestframework_simplejwt==5.5.0
 requests==2.32.4
+pillow>=9.0.0

@@ -46,6 +46,7 @@ export default function LoginPage() {
 
       if (res.ok) {
         localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
         router.push('/profile');
       } else {
         console.error('後端驗證失敗', data);

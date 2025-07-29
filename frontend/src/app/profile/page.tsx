@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useRef, ChangeEvent, useEffect } from 'react';
+import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { FaHeart, FaCamera, FaVenus, FaMars, FaTransgender, FaBirthdayCake } from 'react-icons/fa';
 import { IoMdClose } from 'react-icons/io';
 import { GiSwordWound, GiMagicSwirl, GiJourney } from 'react-icons/gi';
 import './profile.css'
+import axiosInstance from '@/common/axio';
+import { getInterestCategories } from '@/common/api';
 
 // 星座資料
 const zodiacSigns = [
@@ -23,39 +25,18 @@ const zodiacSigns = [
 ];
 
 // 興趣標籤的類型定義
-interface InterestCategory {
-  id: string;
+
+interface InterestSubcategory {
+  id: number;
   name: string;
-  subcategories: string[];
 }
 
-const interestCategories: InterestCategory[] = [
-  {
-    id: 'sports',
-    name: '運動',
-    subcategories: ['籃球', '足球', '游泳', '健身', '瑜伽', '跑步']
-  },
-  {
-    id: 'arts',
-    name: '藝術',
-    subcategories: ['繪畫', '攝影', '音樂', '舞蹈', '戲劇', '設計']
-  },
-  {
-    id: 'food',
-    name: '美食',
-    subcategories: ['咖啡', '甜點', '異國料理', '烹飪', '品酒', '素食']
-  },
-  {
-    id: 'travel',
-    name: '旅行',
-    subcategories: ['背包客', '海島度假', '城市探索', '登山露營', '公路旅行', '文化體驗']
-  },
-  {
-    id: 'tech',
-    name: '科技',
-    subcategories: ['程式設計', 'AI', '電競', '3C產品', '區塊鏈', '太空科技']
-  }
-];
+interface InterestCategory {
+  id: number; // 將 id 類型調整為 number
+  name: string;
+  subcategories: InterestSubcategory[]; // subcategories 現在是一個物件陣列
+}
+
 
 export default function Profile() {
   // 狀態管理
@@ -70,6 +51,21 @@ export default function Profile() {
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [bio, setBio] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [interestCategories, setInterestCategories] = useState<InterestCategory[]>([]);
+  
+  const uploadPhoto = async (photo: File) => {
+    const formData = new FormData();
+    formData.append('photo', photo);
+
+    const response = await axiosInstance.post('/personal/upload-photo/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return response.data.photo_url; // 後端回傳圖片網址
+};
+
 
   // 根據生日計算星座
   useEffect(() => {
@@ -154,22 +150,48 @@ export default function Profile() {
   };
 
   // 提交表單
-  const handleSubmit = () => {
-    const formData = {
-      photos,
-      nickname,
-      birthday,
-      zodiac,
-      gender,
-      preference,
-      ageRange,
-      interests: selectedSubcategories,
-      bio
-    };
-    console.log('提交的資料:', formData);
-    // 這裡可以加入API呼叫將資料傳送到後端
-    alert('個人資料已保存！開始你的奇幻交友旅程吧！');
+  const handleSubmit = async () => {
+    try {
+      // 上傳所有照片，取得 URL
+      const photoUrls = await Promise.all(
+        photos.map(photo => uploadPhoto(photo))
+      );
+
+      // 建立資料 JSON
+      const payload = {
+        nickname,
+        birthday,
+        zodiac,
+        gender,
+        preference,
+        ageRange,
+        interests: selectedSubcategories,
+        bio,
+        photos: photoUrls,
+      };
+
+      const response = await axiosInstance.post('/personal/profile/', payload);
+      console.log('資料儲存成功:', response.data);
+
+    } catch (error) {
+      console.error('上傳或儲存失敗:', error);
+    }
   };
+
+  useEffect(() => {
+    const fetchInterestCategoriesData = async () => {
+      try {
+        const data = await getInterestCategories(); // 等待 Promise 解析
+        setInterestCategories(data);
+      } catch (error) {
+        console.error("Error fetching interest categories:", error);
+        // 可以選擇在這裡設定一個錯誤狀態或顯示錯誤訊息給使用者
+      }
+    };
+
+    fetchInterestCategoriesData(); // 呼叫非同步函式
+  }, []);
+
 
   return (
     <div className="profile-edit-container">
@@ -234,7 +256,7 @@ export default function Profile() {
           
           <div className="input-group">
             <label>
-              <FaBirthdayCake className="input-icon" /> 生日
+              生日
             </label>
             <input
               type="date"
@@ -256,9 +278,9 @@ export default function Profile() {
                 <input
                   type="radio"
                   name="gender"
-                  value="male"
-                  checked={gender === 'male'}
-                  onChange={() => setGender('male')}
+                  value="M"
+                  checked={gender === 'M'}
+                  onChange={() => setGender('M')}
                 />
                 <span className="radio-custom">
                   <FaMars /> 男性
@@ -268,9 +290,9 @@ export default function Profile() {
                 <input
                   type="radio"
                   name="gender"
-                  value="female"
-                  checked={gender === 'female'}
-                  onChange={() => setGender('female')}
+                  value="F"
+                  checked={gender === 'F'}
+                  onChange={() => setGender('F')}
                 />
                 <span className="radio-custom">
                   <FaVenus /> 女性
@@ -292,69 +314,69 @@ export default function Profile() {
           </div>
         </div>
 
-{/* 交友偏好 */}
-<div className="form-section">
-  <h2>交友偏好</h2>
-  
-  <div className="radio-group">
-    <h3>交友傾向</h3>
-    <div className="radio-options">
-      <label>
-        <input
-          type="radio"
-          name="preference"
-          value="M"
-          checked={preference === 'M'}
-          onChange={() => setPreference('M')}
-        />
-        <span className="radio-custom">男性</span>
-      </label>
-      <label>
-        <input
-          type="radio"
-          name="preference"
-          value="F"
-          checked={preference === 'F'}
-          onChange={() => setPreference('F')}
-        />
-        <span className="radio-custom">女性</span>
-      </label>
-      <label>
-        <input
-          type="radio"
-          name="preference"
-          value="O"
-          checked={preference === 'O'}
-          onChange={() => setPreference('O')}
-        />
-        <span className="radio-custom">其他</span>
-      </label>
-    </div>
-  </div>
-  
-  <div className="range-group">
-    <h3>交友年齡範圍</h3>
-    <div className="range-slider">
-      <span>{ageRange[0]}</span>
-      <input
-        type="range"
-        min="18"
-        max="98"
-        value={ageRange[0]}
-        onChange={(e) => handleAgeRangeChange(0, parseInt(e.target.value))}
-      />
-      <span>至</span>
-      <input
-        type="range"
-        min={ageRange[0] + 1}
-        max="99"
-        value={ageRange[1]}
-        onChange={(e) => handleAgeRangeChange(1, parseInt(e.target.value))}
-      />
-      <span>{ageRange[1]}</span>
-    </div>
-  </div>
-</div>
+        {/* 交友偏好 */}
+        <div className="form-section">
+        <h2>交友偏好</h2>
+        
+        <div className="radio-group">
+            <h3>交友傾向</h3>
+            <div className="radio-options">
+            <label>
+                <input
+                type="radio"
+                name="preference"
+                value="M"
+                checked={preference === 'M'}
+                onChange={() => setPreference('M')}
+                />
+                <span className="radio-custom">男性</span>
+            </label>
+            <label>
+                <input
+                type="radio"
+                name="preference"
+                value="F"
+                checked={preference === 'F'}
+                onChange={() => setPreference('F')}
+                />
+                <span className="radio-custom">女性</span>
+            </label>
+            <label>
+                <input
+                type="radio"
+                name="preference"
+                value="O"
+                checked={preference === 'O'}
+                onChange={() => setPreference('O')}
+                />
+                <span className="radio-custom">其他</span>
+            </label>
+            </div>
+        </div>
+        
+        <div className="range-group">
+            <h3>交友年齡範圍</h3>
+            <div className="range-slider">
+            <span>{ageRange[0]}</span>
+            <input
+                type="range"
+                min="18"
+                max="98"
+                value={ageRange[0]}
+                onChange={(e) => handleAgeRangeChange(0, parseInt(e.target.value))}
+            />
+            <span>至</span>
+            <input
+                type="range"
+                min={ageRange[0] + 1}
+                max="99"
+                value={ageRange[1]}
+                onChange={(e) => handleAgeRangeChange(1, parseInt(e.target.value))}
+            />
+            <span>{ageRange[1]}</span>
+            </div>
+        </div>
+        </div>
         {/* 興趣標籤 */}
         <div className="form-section">
           <h2>興趣標籤</h2>
@@ -383,13 +405,13 @@ export default function Profile() {
                   .filter(cat => selectedCategories.includes(cat.id))
                   .flatMap(cat => cat.subcategories)
                   .map(sub => (
-                    <button
-                      key={sub}
-                      className={`subcategory-tag ${selectedSubcategories.includes(sub) ? 'active' : ''}`}
-                      onClick={() => toggleSubcategory(sub)}
-                    >
-                      {sub}
-                    </button>
+                  <button
+                    key={sub.id} // **將 key 從 `sub` 改為 `sub.id`**
+                    className={`subcategory-tag ${selectedSubcategories.includes(sub.id) ? 'active' : ''}`}
+                    onClick={() => toggleSubcategory(sub.id)}
+                  >
+                    {sub.name}
+                  </button>
                   ))}
               </div>
             </div>

@@ -9,6 +9,10 @@ class InterestGroup(models.Model):
     class Meta:
         db_table = "interest_group"
 
+    def __str__(self):
+        return self.name  # 這會在下拉選單中顯示 name 字段
+
+
 class InterestTag(models.Model):
     interest_group_id = models.ForeignKey(InterestGroup, on_delete=models.CASCADE,db_column='interest_group_id')
     name = models.CharField(max_length=30, unique=True, db_column="name")
@@ -19,6 +23,7 @@ class InterestTag(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Profile(models.Model):
     GENDER_CHOICES = [
@@ -37,15 +42,16 @@ class Profile(models.Model):
     nickname = models.CharField(
         max_length=30,
         db_column='nickname',
-        null=False,
-        blank=False
+        null=True,
+        blank=True
     )
 
     gender = models.CharField(
         max_length=1,
         choices=GENDER_CHOICES,
         db_column='gender',
-        null=False
+        null=True,
+        blank=True
     )
 
     birthday = models.DateField(
@@ -64,7 +70,9 @@ class Profile(models.Model):
     interests = models.ManyToManyField(
         InterestTag,
         through='ProfileInterestTag',
-        related_name='profiles'
+        related_name='profiles',
+        null=True,
+        blank=True
     )
 
     preferred_gender = models.CharField(
@@ -145,3 +153,14 @@ class ProfilePhoto(models.Model):
 
     def __str__(self):
         return f"Photo of {self.profile.nickname}"
+
+class ProfileInit(models.Model):
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name='init',
+        db_column='profile_id'
+    )
+
+    is_init = models.BooleanField(default=False,db_column='is_init')
+       
