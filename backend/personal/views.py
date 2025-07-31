@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import InterestGroup, InterestTag,Profile, ProfilePhoto,ProfileInit
+from .models import InterestGroup, InterestTag,Profile, ProfilePhoto
 from django.core.exceptions import ObjectDoesNotExist
 from .serializers import InterestGroupSerializer
 from rest_framework.permissions import IsAuthenticated
@@ -58,11 +58,6 @@ class ProfileUpdateView(APIView):
             tags = InterestTag.objects.filter(id__in=interest_ids)
             for tag in tags:
                 ProfileInterestTag.objects.create(profile=profile, interest_tag=tag)
-
-        ProfileInit.objects.create(
-            profile=profile,
-            is_init=True
-        )
 
         return Response({
             "message": "Profile saved successfully."
