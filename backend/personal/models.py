@@ -154,13 +154,58 @@ class ProfilePhoto(models.Model):
     def __str__(self):
         return f"Photo of {self.profile.nickname}"
 
-class ProfileInit(models.Model):
-    profile = models.ForeignKey(
+class Match(models.Model):
+    profile1 = models.ForeignKey(
         Profile,
         on_delete=models.CASCADE,
-        related_name='init',
-        db_column='profile_id'
+        related_name='match_profile_1',
+        db_column='profile_1'
     )
 
-    is_init = models.BooleanField(default=False,db_column='is_init')
-       
+    profile2 = models.ForeignKey(  # ← 修正多餘等號
+        Profile,
+        on_delete=models.CASCADE,
+        related_name='match_profile_2',  # ← 建議改為語意清楚的 related_name
+        db_column='profile_2'  # ← 修正 column 名稱一致性
+    )
+
+    status = models.CharField(
+        db_column='status',
+        max_length=20,
+        null=True,
+        blank=True
+    )  # 可選值: match / pending / pass
+
+    cdatetime = models.DateTimeField(
+        auto_now_add=True,
+        db_column='cdatetime'
+    )
+
+    mdatetime = models.DateTimeField(
+        auto_now=True,
+        db_column='mdatetime'
+    )
+
+    matchtime = models.DateTimeField(
+        db_column='match_time',
+        null=True,
+        blank=True
+    )
+
+    lifttime = models.DateTimeField(
+        db_column='lifttime',
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        db_table = 'match'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['profile1', 'profile2'],
+                name='unique_match_profiles'
+            )
+        ]
+
+    def __str__(self):
+        return f"Match between {self.profile1.nickname} & {self.profile2.nickname}"

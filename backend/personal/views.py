@@ -97,3 +97,10 @@ class UploadPhotoView(APIView):
             "message": "Photo uploaded successfully.",
             "photo_url": profile_photo.image.url  # 回傳圖片的相對 URL
         }, status=status.HTTP_201_CREATED)
+
+
+class MatchView(APIView):
+    authentication_classes = [JWTAuthentication]  # JWT 認證
+    permission_classes = [IsAuthenticated]       # 必須登入
+
+    pass    
