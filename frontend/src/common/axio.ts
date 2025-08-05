@@ -34,7 +34,7 @@ axiosInstance.interceptors.response.use(
         try {
           // 用 refresh token 換新 access token
           const res = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/token/refresh`,
+            `${process.env.NEXT_PUBLIC_API_BASE_URL}token/refresh/`,
             { refresh: refreshToken },
             {
               headers: { 'Content-Type': 'application/json' },

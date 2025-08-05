@@ -152,10 +152,6 @@ export default function Profile() {
   // 提交表單
   const handleSubmit = async () => {
     try {
-      // 上傳所有照片，取得 URL
-      const photoUrls = await Promise.all(
-        photos.map(photo => uploadPhoto(photo))
-      );
 
       // 建立資料 JSON
       const payload = {
@@ -167,11 +163,17 @@ export default function Profile() {
         ageRange,
         interests: selectedSubcategories,
         bio,
-        photos: photoUrls,
       };
 
       const response = await axiosInstance.post('/personal/profile/', payload);
       console.log('資料儲存成功:', response.data);
+
+      // 上傳所有照片，取得 URL
+      const photoUrls = await Promise.all(
+        photos.map(photo => uploadPhoto(photo))
+      );
+
+
 
     } catch (error) {
       console.error('上傳或儲存失敗:', error);

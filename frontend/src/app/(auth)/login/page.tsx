@@ -5,12 +5,33 @@ import { useRouter } from 'next/navigation';
 import { FaGoogle, FaFacebook, FaHeart, FaUser, FaLock } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import './loginPage.css';
+import axiosPublic from '@/common/axiosPublic';
+import MessageModal from '@/common/MessageModal';
 
 export default function LoginPage() {
   const [showIntro, setShowIntro] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    message: '',
+    status: 'success' as 'success' | 'warning' | 'fail',
+  });
+
+  const showModal = (message: string, status: 'success' | 'warning' | 'fail') => {
+    setModalState({
+      isOpen: true,
+      message,
+      status,
+    });
+  };
+
+  const closeModal = () => {
+    setModalState(prev => ({ ...prev, isOpen: false }));
+  };
+
 
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   console.log("Google client ID:", clientId);
@@ -47,7 +68,7 @@ export default function LoginPage() {
       if (res.ok) {
         localStorage.setItem('access_token', data.access);
         localStorage.setItem('refresh_token', data.refresh);
-        router.push('/profile');
+        router.push(`/${data.redirect_page}`);
       } else {
         console.error('後端驗證失敗', data);
         alert('Google 登入失敗');
@@ -58,12 +79,28 @@ export default function LoginPage() {
     }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('登入資訊:', { username, password });
-    router.push('/profile');
+
+    try {
+      const response = await axiosPublic.post('/authen/login/', {
+        username,
+        password,
+      });
+
+      // ✅ 成功：儲存 token、跳轉
+      localStorage.setItem('access_token', response.data.access);
+      localStorage.setItem('refresh_token', response.data.refresh);
+      router.push(`/${response.data.redirect_page}`);
+    } catch (error: any) {
+      // ✅ 失敗：顯示錯誤訊息
+      const errorMessage =
+        error.response?.data?.error || '登入失敗，請稍後再試';
+      showModal(errorMessage, 'fail');
+    }
   };
 
+    
   const handleSocialLogin = (provider: string) => {
     if (provider === 'Google') {
       window.google?.accounts.id.prompt(); // 觸發 Google 登入彈窗
@@ -145,7 +182,7 @@ export default function LoginPage() {
                 />
               </div>
               
-              <button type="submit" className="login-button">
+              <button onClick={handleLogin} type="submit" className="login-button">
                 登入
               </button>
             </form>
@@ -168,7 +205,15 @@ export default function LoginPage() {
             
             <div className="register-link">
               還沒有帳號? <button onClick={() => router.push('/register')}>立即註冊</button>
-            </div>
+              </div>
+              
+              <MessageModal
+                isOpen={modalState.isOpen}
+                onClose={closeModal}
+                message={modalState.message}
+                status={modalState.status}
+                duration={5000} // 5秒後自動關閉
+              />
           </motion.div>
         )}
       </AnimatePresence>

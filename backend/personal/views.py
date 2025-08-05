@@ -1,11 +1,17 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import InterestGroup, InterestTag,Profile, ProfilePhoto
+from .models import *
 from django.core.exceptions import ObjectDoesNotExist
 from .serializers import InterestGroupSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import status, permissions, parsers
+from django.db import transaction
+from django.db.models import Q
+from datetime import date, timedelta
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+
  
 
 class InterestGroupWithTagsAPIView(APIView):
@@ -16,11 +22,6 @@ class InterestGroupWithTagsAPIView(APIView):
         serializer = InterestGroupSerializer(interest_groups, many=True)
         return Response(serializer.data)
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, permissions
-from .models import Profile, ProfilePhoto, InterestTag, ProfileInterestTag
-from django.db import transaction
 
 
 class ProfileUpdateView(APIView):
@@ -95,7 +96,51 @@ class UploadPhotoView(APIView):
 
 
 class MatchView(APIView):
-    authentication_classes = [JWTAuthentication]  # JWT 認證
-    permission_classes = [IsAuthenticated]       # 必須登入
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    pass    
+    def get(self, request):
+        user = request.user
+        profile = None
+        try:
+            profile = Profile.objects.get(user=user)
+        except Profile.DoesNotExist:
+            return Response({"error": "使用者尚未建立 Profile"}, status=400)
+
+        # 使用者偏好年齡範圍
+        age_min = profile.preferred_age_min
+        age_max = profile.preferred_age_max
+
+        today = date.today()
+        # 生日區間：年齡最大的人生日要最早，年齡最小的人生日要最晚
+        birthday_max = today.replace(year=today.year - age_min)  # 最年輕的生日（年齡最小）
+        birthday_min = today.replace(year=today.year - age_max)  # 最年長的生日（年齡最大）
+
+        # ✅ 取得已經互動過的對象（排除這些對象）
+        interacted_profile_ids = Match.objects.filter(profile1=profile).values_list('profile2_id', flat=True)
+
+        # ✅ 取出尚未互動、也不是自己的 Profile
+        candidate_profiles = Profile.objects.exclude(id=profile.id) \
+            .exclude(id__in=interacted_profile_ids) \
+            .filter(
+                gender=profile.preferred_gender,
+                birthday__range=(birthday_min, birthday_max),
+            ) \
+            .select_related('user') \
+            .prefetch_related('interests', 'photos')[:30]
+
+        # ✅ 組合資料格式
+        result = []
+        for candidate in candidate_profiles:
+            data = {
+                "nickname": candidate.nickname,
+                "gender": candidate.gender,
+                "birthday": candidate.birthday,
+                "bio": candidate.bio,
+                "interests": [tag.name for tag in candidate.interests.all()],
+                "photos": [photo.image.url for photo in candidate.photos.all()],
+            }
+            result.append(data)
+
+        return Response(result, status=200)
+
