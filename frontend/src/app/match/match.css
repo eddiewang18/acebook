@@ -1,0 +1,374 @@
+.match-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #6b6bff, #cd275f);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: white;
+  padding: 20px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ff6b6b;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 400px;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.profile-card.swipe-left {
+  transform: translateX(-100px) rotate(-15deg);
+  opacity: 0.5;
+}
+
+.profile-card.swipe-right {
+  transform: translateX(100px) rotate(15deg);
+  opacity: 0.5;
+}
+
+.pic-block {
+  position: relative;
+  width: 100%;
+  height: 400px;
+}
+
+.photo-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.photo-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-nav {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 15px;
+  transform: translateY(-50%);
+}
+
+.nav-btn {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.nav-btn:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+}
+
+.content {
+  padding: 20px;
+}
+
+.name-content {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.name-content h2 {
+  font-size: 1.8rem;
+  margin-right: 10px;
+}
+
+.gender-icon {
+  font-size: 1.2rem;
+}
+
+.gender-icon svg {
+  color: #ff6b6b;
+}
+
+.interest-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.interest-tag {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.intro p {
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 30px;
+}
+
+.dislike-btn, .like-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.dislike-btn {
+  background-color: white;
+  color: #ff5252;
+}
+
+.like-btn {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+.dislike-btn:hover {
+  transform: scale(1.1) translateX(-5px);
+  box-shadow: 0 8px 20px rgba(255, 82, 82, 0.3);
+}
+
+.like-btn:hover {
+  transform: scale(1.1) translateX(5px);
+  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+}
+
+.match-footer {
+  margin-top: 30px;
+  text-align: center;
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
+.journey-icon, 
+.magic-icon, 
+.sword-icon {
+  font-size: 1.5rem;
+  margin: 0 5px;
+  vertical-align: middle;
+}
+
+.magic-icon {
+  animation: swirl 3s infinite linear;
+}
+
+.sword-icon {
+  animation: swing 1s infinite alternate;
+}
+
+@keyframes swirl {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes swing {
+  0% { transform: rotate(-15deg); }
+  100% { transform: rotate(15deg); }
+}
+
+/* 響應式設計 */
+@media (max-width: 480px) {
+  .pic-block {
+    height: 350px;
+  }
+  
+  .action-buttons {
+    gap: 30px;
+  }
+  
+  .dislike-btn, .like-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 1.3rem;
+  }
+}
+
+/* 新增的側邊欄樣式 */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 60px;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar.open {
+  width: 250px;
+}
+
+.sidebar-header {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.username {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 0;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  margin-bottom: 5px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 107, 107, 0.3);
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  padding: 12px 20px;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 107, 107, 0.3);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 60px;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar.open ~ .main-content {
+  margin-left: 250px;
+}
+
+/* 響應式設計調整 */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 0;
+  }
+  
+  .sidebar.open {
+    width: 250px;
+    z-index: 1000;
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .sidebar.open ~ .main-content {
+    margin-left: 0;
+  }
+}
